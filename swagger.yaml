@@ -1,13 +1,21 @@
-swagger: '2.0'
+swagger: "2.0"
 info:
   title: Bank Argent API documentation
   description: Contains all available API endpoints in this codebase
-  version: '1.0.0'
-  termsOfService: 'http://swagger.io/terms/'
+  version: "1.0.0"
+  termsOfService: "http://swagger.io/terms/"
 host: localhost:3001
 basePath: /api/v1
 schemes:
   - http
+
+securityDefinitions:
+  Bearer:
+    type: apiKey
+    name: Authorization
+    in: header
+
+    # User Module
 paths:
   /user/login:
     post:
@@ -21,18 +29,21 @@ paths:
           description: Login Payload
           required: true
           schema:
-            $ref: '#/definitions/Login'
+            $ref: "#/definitions/Login"
       produces:
         - application/json
       responses:
-        '200':
+        "200":
           description: Login Successfully
           schema:
-            $ref: '#/definitions/LoginResponse'
-        '400':
+            $ref: "#/definitions/LoginResponse"
+        "400":
           description: Invalid Fields
-        '500':
+        "500":
           description: Internal Server Error
+
+          # ------
+
   /user/signup:
     post:
       tags:
@@ -45,18 +56,21 @@ paths:
           description: Signup Payload
           required: true
           schema:
-            $ref: '#/definitions/User'
+            $ref: "#/definitions/User"
       produces:
         - application/json
       responses:
-        '200':
+        "200":
           description: Signup Successfully
           schema:
-            $ref: '#/definitions/ApiResponse'
-        '400':
+            $ref: "#/definitions/ApiResponse"
+        "400":
           description: Invalid Fields
-        '500':
+        "500":
           description: Internal Server Error
+
+          # ------
+
   /user/profile:
     post:
       security:
@@ -70,17 +84,19 @@ paths:
           name: Authorization
           description: Attach Bearer JWT token
           required: true
+          type: string
       produces:
         - application/json
       responses:
-        '200':
+        "200":
           description: User profile retrieved successully
           schema:
-            $ref: '#/definitions/ApiResponse'
-        '400':
+            $ref: "#/definitions/ApiResponse"
+        "400":
           description: Invalid Fields
-        '500':
+        "500":
           description: Internal Server Error
+
     put:
       security:
         - Bearer: []
@@ -93,28 +109,149 @@ paths:
           name: Authorization
           description: Attach Bearer JWT token
           required: true
+          type: string
         - in: body
           name: body
           description: Update user profile attributes
           required: true
           schema:
-            $ref: '#/definitions/UserProfile'
+            $ref: "#/definitions/UserProfile"
       produces:
         - application/json
       responses:
-        '200':
+        "200":
           description: User profile retrieved successully
           schema:
-            $ref: '#/definitions/ApiResponse'
-        '400':
+            $ref: "#/definitions/ApiResponse"
+        "400":
           description: Invalid Fields
-        '500':
+        "500":
           description: Internal Server Error
-securityDefinitions:
-  Bearer:
-    type: apiKey
-    name: Authorization
-    in: header
+
+          # ------ TRANSACTIONS ------
+
+  /user/transactions:
+    get:
+      security:
+        - Bearer: []
+      tags:
+        - User Transactions Module
+      summary: User transactions API
+      description:  API for fetching user transactions for the current month. Provide 'month' and 'year' as query parameters to filter transactions for a specific month and year. If no query parameters are provided, the API will return transactions for the current month by default.
+      parameters:
+        - in: header
+          name: Authorization
+          description: Attach Bearer JWT token
+          required: true
+          type: string
+        - in: query
+          name: month
+          schema:
+            type: integer
+          description: the month of the transactions
+        - in: query
+          name: year
+          schema:
+            type: integer
+          description: the year of the transaction
+
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: User transactions retrieved Successfully
+          schema:
+            $ref: "#/definitions/TransactionsResponse"
+        "400":
+          description: Invalid Fields
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not found
+        "500":
+          description: Internal Server Error
+
+          # ------
+
+  /user/transactions/{transactionId}:
+    get:
+      security:
+        - Bearer: []
+      tags:
+        - User Transactions Module
+      summary: User transactions API
+      description: API for fecthing an user specific transaction
+      parameters:
+        - in: header
+          name: Authorization
+          description: Attach Bearer JWT token
+          required: true
+          type: string
+        - in: path
+          name: transactionId
+          description: id of the transaction
+          required: true
+          type: string
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: User transactions retrieved Successfully
+          schema:
+            $ref: "#/definitions/UserTransaction"
+        "400":
+          description: Invalid Fields
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not found
+        "500":
+          description: Internal Server Error
+
+    patch:
+      security:
+        - Bearer: []
+      tags:
+        - User Transactions Module
+      summary: User transactions API
+      description: API for updating an information to an user specific transaction informations
+      parameters:
+        - in: header
+          name: Authorization
+          description: Attach Bearer JWT token
+          required: true
+          type: string
+        - in: path
+          name: transactionId
+          description: id of the transaction
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: add user transaction information
+          required: true
+          schema:
+            $ref: "#/definitions/UserTransactionInfos"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: User transaction informations updated Successfully
+          schema:
+            $ref: "#/definitions/UserTransaction"
+        "204":
+          description: No Content
+        "400":
+          description: Invalid Fields
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+
+          # ------
+
+    # models
+
 definitions:
   User:
     properties:
@@ -130,6 +267,7 @@ definitions:
       lastName:
         type: string
         description: user last name
+
   Login:
     properties:
       email:
@@ -138,6 +276,7 @@ definitions:
       password:
         type: string
         description: user password
+
   ApiResponse:
     type: object
     properties:
@@ -152,11 +291,13 @@ definitions:
             type: string
           email:
             type: string
+
   LoginResponse:
     type: object
     properties:
       token:
         type: string
+
   UserProfile:
     type: object
     properties:
@@ -164,3 +305,89 @@ definitions:
         type: string
       lastName:
         type: string
+
+  TransactionsResponse:
+    type: object
+    properties:
+      body:
+        type: object
+        properties:
+          transactions:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: string
+                  example: "01F25"
+                date:
+                  type: object
+                  properties:
+                    month:
+                      type: number
+                      example: 6
+                    year:
+                      type: number
+                      example: 2023
+                description:
+                  type: string
+                  example: "food"
+                amount:
+                  type: number
+                  example: 125.20
+                balance:
+                  type: number
+                  example: 250359
+                type:
+                  type: string
+                  example: "electronic"
+                category:
+                  type: string
+                  example: "food"
+                notes:
+                  type: string
+                  example: "buy donuts for avengers breakfast"
+
+  UserTransaction:
+    type: object
+    properties:
+      id:
+        type: string
+        example: "01F25"
+      date:
+        type: object
+        properties:
+          month:
+            type: number
+            example: 6
+          year:
+            type: number
+            example: 2023
+      description:
+        type: string
+        example: "food"
+      amount:
+        type: number
+        example: 125.20
+      balance:
+        type: number
+        example: 250359
+      type:
+        type: string
+        example: "electronic"
+      category:
+        type: string
+        example: "food"
+      notes:
+        type: string
+        example: "buy donuts for avengers breakfast"
+
+  UserTransactionInfos:
+    type: object
+    properties:
+      category:
+        type: string
+        example: "food"
+      notes:
+        type: string
+        example: "buy donuts for avengers breakfast"
