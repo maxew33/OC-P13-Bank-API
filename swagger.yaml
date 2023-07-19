@@ -146,15 +146,14 @@ paths:
           type: string
         - in: query
           name: month
-          schema:
-            type: integer
           description: the month of the transactions
+          required: false
+          type: integer
         - in: query
           name: year
-          schema:
-            type: integer
           description: the year of the transaction
-
+          required: false
+          type: integer
       produces:
         - application/json
       responses:
